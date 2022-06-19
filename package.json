@@ -9,7 +9,7 @@
     "start:dev": "npm run start:commands && npm run start:bot",
 
     "postinstall": "tsc",
-    "start": "tsc && node dist/commands.ts && node dist/index.ts",
+    "start": "node dist/commands.js && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Antaresque",
