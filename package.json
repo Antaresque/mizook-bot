@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start:commands": "ts-node src/commands.ts",
-    "start": "ts-node src/index.ts",
+    "start:bot": "ts-node src/index.ts",
+    "start": "npm start commands && npm start bot",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Antaresque",
