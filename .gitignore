@@ -1,0 +1,4 @@
+node_modules
+.env
+dist
+keys_google.json
