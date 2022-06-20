@@ -22,7 +22,7 @@ export const readConstants = async () => {
 
         const response = await sheets.spreadsheets.values.get({
           spreadsheetId: '1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY',
-          range: 'Constants!A2:D308',
+          range: 'Constants!A2:D1000',
         });
 
         const { values } = response.data;
