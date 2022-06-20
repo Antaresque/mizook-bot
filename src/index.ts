@@ -111,7 +111,7 @@ function createEmbed(result: number, constant: number, diff: string, accuracy: n
     .setColor("#DDAACC")
     .setTitle(`${song} [${difficulty.toUpperCase()}]`)
     .addFields(
-      { name: 'Result', value: `**${result.toFixed(2)}** [${constant.toFixed(2)} ${diff}] (*${calcRank(constant)}*)` },
+      { name: 'Result', value: `**${result.toFixed(2)}** [${constant.toFixed(2)} ${diff}] (*${calcRank(result)}*)` },
       { name: 'Accuracy', value: `${(accuracy * 100).toFixed(2)}%`, inline: true },
       { name: 'Score', value: `${scoreDataNum.join('/')}`, inline: true },
     );
