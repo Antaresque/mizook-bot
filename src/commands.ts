@@ -44,7 +44,31 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN!);
         .setDescription('Your score in P/G/G/B/M format - for example: 920/2/0/0/1')
         .setRequired(true));
 
-    const commands = [calc, enumCalc].map(command => command.toJSON());
+    const newCalc = new SlashCommandBuilder().setName('calc_test').setDescription('Calculate score for chosen chart')
+        .addStringOption(option => 
+          option.setName('song')
+          .setDescription('Song name')
+          .setRequired(true)
+          .setAutocomplete(true))
+        .addStringOption(option => 
+          option.setName('difficulty')
+          .setDescription('Chart difficulty')
+          .setRequired(true)
+          .setChoices(...chartDifficulties))
+        .addIntegerOption(option =>
+          option.setName('great')
+          .setDescription('Amount of GREATs (default 0)'))
+        .addIntegerOption(option =>
+          option.setName('good')
+          .setDescription('Amount of GOODs (default 0)'))
+          .addIntegerOption(option =>
+            option.setName('bad')
+            .setDescription('Amount of BADs (default 0)'))
+            .addIntegerOption(option =>
+              option.setName('miss')
+              .setDescription('Amount of MISS (default 0)'));
+
+    const commands = [calc, enumCalc, newCalc].map(command => command.toJSON());
 
     console.log('Started refreshing application (/) commands.');
 

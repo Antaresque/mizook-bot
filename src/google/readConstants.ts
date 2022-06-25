@@ -6,11 +6,13 @@ export class ChartData {
     name: string;
     difficulty: Difficulty;
     constant: number;
+    noteCount: number;
 
-    constructor(n: string, d: Difficulty, c: number) {
+    constructor(n: string, d: Difficulty, c: number, nc: number) {
         this.name = n;
         this.difficulty = d;
         this.constant = c;
+        this.noteCount = nc;
     }
 }
 
@@ -36,7 +38,8 @@ export const readConstants = async () => {
             return new ChartData(
                 value[0],
                 value[3],
-                parseFloat(value[1])
+                parseFloat(value[1]),
+                parseInt(value[4]),
             );
         })
     }

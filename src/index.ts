@@ -59,6 +59,32 @@ client.on('interactionCreate', async interaction => {
         
     }
   }
+
+  // ----
+  if(commandName === 'calc_test') {
+    const song = options.getString('song');
+    const difficulty = options.getString('difficulty');
+    const great = options.getInteger('great') ?? 0;
+    const good = options.getInteger('good') ?? 0;
+    const bad = options.getInteger('bad') ?? 0;
+    const miss = options.getInteger('miss') ?? 0;
+    console.log(song, difficulty, great, good, bad, miss);
+
+    const lookForSong = songData.find(data => song === data.name && difficulty === data.difficulty);
+    if(lookForSong === undefined) 
+      return await interaction.reply("Invalid arguments or chart wasn't found in database");
+
+    const constant = lookForSong.constant;
+    const noteCount = lookForSong.noteCount;
+      
+    const data = calculateScoreWithNoteCount(constant, noteCount, great, good, bad, miss);
+    if(data === undefined)
+      interaction.reply("Invalid score data");
+    else {
+      const embed = createEmbed(data?.result, constant, data?.diff, data?.accuracy, data?.scoreDataNum, song ?? "", difficulty ?? "");
+      interaction.reply({ embeds: [embed] });
+    }
+  }
 });
 
 client.login(process.env.TOKEN);
@@ -165,4 +191,35 @@ function calcRank(constant: number): string {
     return "Novice";
   else
     return "Troll";
+}
+
+function calculateScoreWithNoteCount(constant: number, noteCount: number, great: number, good: number, bad: number, miss: any) {
+  const scoreDataNum = [
+    noteCount - great - good - bad - miss,
+    great, good, bad, miss
+  ]
+
+  const accuracy = calcAccuracy(scoreDataNum);
+  let constantModifier: number;
+
+  if(accuracy > 1.00)
+    return undefined;
+
+  if(accuracy >= 0.99) {
+    const diff = accuracy-0.99;
+    constantModifier = diff * 200 + 2;
+  }
+  else if(accuracy < 0.99 && accuracy >= 0.97){
+    const diff = accuracy-0.97;
+    constantModifier = diff * 100;
+  }
+  else {
+    const diff = accuracy-0.97;
+    constantModifier = diff * 200 / 3;
+  }
+
+  const result = constant + constantModifier;
+  const diff = ((constantModifier > 0) ? "+" : "") + `${constantModifier.toFixed(2)}`
+
+  return { result, diff, accuracy, scoreDataNum };
 }
