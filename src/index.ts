@@ -31,7 +31,7 @@ client.on('interactionCreate', async interaction => {
     if(constant === null || score === null)
       interaction.reply("Invalid arguments");
     else {
-      const data = calculateScore(constant, score)
+      const data = calculateScore(constant, score, 0)
       if(data === undefined)
         interaction.reply("Invalid score data");
       else
@@ -45,11 +45,17 @@ client.on('interactionCreate', async interaction => {
     const score = options.getString('score');
     console.log(song, difficulty, score);
 
-    const constant = songData.find(data => song === data.name && difficulty === data.difficulty)?.constant;
+    const lookForSong = songData.find(data => song === data.name && difficulty === data.difficulty);
+    if(lookForSong === undefined) 
+      return await interaction.reply("Invalid arguments or chart wasn't found in database");
+
+    const constant = lookForSong.constant;
+    const noteCount = lookForSong.noteCount;
+
     if(constant === undefined || score === null)
       interaction.reply("Invalid arguments or chart wasn't found in database");
     else {
-      const data = calculateScore(constant, score);
+      const data = calculateScore(constant, score, noteCount);
       if(data === undefined)
         interaction.reply("Invalid score data");
       else {
@@ -61,7 +67,7 @@ client.on('interactionCreate', async interaction => {
   }
 
   // ----
-  if(commandName === 'calc_test') {
+  if(commandName === 'calculate_manual') {
     const song = options.getString('song');
     const difficulty = options.getString('difficulty');
     const great = options.getInteger('great') ?? 0;
@@ -89,13 +95,15 @@ client.on('interactionCreate', async interaction => {
 
 client.login(process.env.TOKEN);
 
-function calculateScore(constant: number, score: string) {
+function calculateScore(constant: number, score: string, noteCount: number) {
   const scoreData = score.split('/');
 
-  if(scoreData.length !== 5)
+  if(scoreData.length > 5 || scoreData.length < 1)
     return undefined;
 
-  const scoreDataNum = scoreData.map(num => parseInt(num));
+  const scoreDataNum = generateScoreNum(scoreData, noteCount);
+  if(scoreDataNum === undefined)
+    return undefined;
 
   const accuracy = calcAccuracy(scoreDataNum);
   let constantModifier: number;
@@ -161,7 +169,7 @@ function calcAccuracy(score: number[]) {
 async function autoCompleteName(interaction: AutocompleteInteraction<CacheType>) {
   const { commandName, options } = interaction;
 
-  if(commandName === 'calculate' || commandName === 'calc_test') {
+  if(commandName === 'calculate' || commandName === 'calculate_manual') {
     const focusedValue = options.getFocused().toString().toLowerCase();
     const filtered = songNames?.filter(choice => choice.toLowerCase().includes(focusedValue));
     if(filtered !== undefined && filtered.length <= 25)
@@ -224,3 +232,24 @@ function calculateScoreWithNoteCount(constant: number, noteCount: number, great:
 
   return { result, diff, accuracy, scoreDataNum };
 }
+function generateScoreNum(score: string[], noteCount: number) {
+  if(score.length === 5) {
+    return score.map(s => parseInt(s));
+  }
+
+  if(score.length > 0) {
+    const arr = score.map(s => parseInt(s));
+    const great = arr[0];
+    const good = arr[1] ?? 0;
+    const bad = arr[2] ?? 0;
+    const miss = arr[3] ?? 0;
+
+    return [
+      noteCount - great - good - bad - miss,
+      great, good, bad, miss
+    ]
+  }
+
+  return undefined;
+}
+

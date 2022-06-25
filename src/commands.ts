@@ -41,10 +41,10 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN!);
         .setChoices(...chartDifficulties))
       .addStringOption(option =>
         option.setName('score')
-        .setDescription('Your score in P/G/G/B/M format - for example: 920/2/0/0/1')
+        .setDescription('Your score in P/G/G/B/M format - for example: 920/2/0/0/1 ')
         .setRequired(true));
 
-    const newCalc = new SlashCommandBuilder().setName('calc_test').setDescription('Calculate score for chosen chart')
+    const newCalc = new SlashCommandBuilder().setName('calculate_manual').setDescription('Calculate score for chosen chart')
         .addStringOption(option => 
           option.setName('song')
           .setDescription('Song name')
