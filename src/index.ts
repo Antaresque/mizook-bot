@@ -161,7 +161,7 @@ function calcAccuracy(score: number[]) {
 async function autoCompleteName(interaction: AutocompleteInteraction<CacheType>) {
   const { commandName, options } = interaction;
 
-  if(commandName === 'calculate') {
+  if(commandName === 'calculate' || commandName === 'calc_test') {
     const focusedValue = options.getFocused().toString().toLowerCase();
     const filtered = songNames?.filter(choice => choice.toLowerCase().includes(focusedValue));
     if(filtered !== undefined && filtered.length <= 25)
@@ -169,6 +169,7 @@ async function autoCompleteName(interaction: AutocompleteInteraction<CacheType>)
         filtered?.map(choice => ({ name: choice, value: choice }))
       )
   }
+  
 }
 
 
