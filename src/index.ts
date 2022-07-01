@@ -1,13 +1,15 @@
-import { readConstants, ChartData, Difficulty } from './google/readConstants';
+import { readConstants, ChartData, Difficulty, readLastModified } from './google/readConstants';
 import { AutocompleteInteraction, CacheType, Client, Intents, MessageEmbed } from "discord.js";
 import 'dotenv/config';
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 let songData: ChartData[] | undefined = undefined;
+let lastModifiedDate: number = 0;
 let songNames: string[];
 
 client.on('ready', async () => {
   songData = await readConstants();
+  lastModifiedDate = await readLastModified();
   if(songData !== undefined)
     songNames = [...new Set(songData.map(chart => chart.name))];
 
@@ -23,6 +25,8 @@ client.on('interactionCreate', async interaction => {
   }
 
   const { commandName, options } = interaction;
+
+  await updateConstants();
 
   if (commandName === 'calculate_custom') {
     const constant = options.getNumber('constant');
@@ -253,3 +257,17 @@ function generateScoreNum(score: string[], noteCount: number) {
   return undefined;
 }
 
+async function updateConstants() {
+  const THIRTY_MINUTES = 1000 * 60 * 30;
+  const current = Date.now();
+
+  if(lastModifiedDate + THIRTY_MINUTES > current)
+    return;
+
+  const newDate = await readLastModified();
+  if(lastModifiedDate === newDate)
+    return;
+
+  lastModifiedDate = newDate;
+  songData = await readConstants();
+}
