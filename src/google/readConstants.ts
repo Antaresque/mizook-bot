@@ -47,3 +47,25 @@ export const readConstants = async () => {
         console.log('Error loading client secret file:', err);
     }
 }
+
+export const readLastModified = async () => {
+    try {
+        const secret = process.env.GOOGLE_SECRET ?? "";
+        const auth = google.auth.fromAPIKey(secret);
+        const drive = google.drive({version: 'v3', auth});
+
+        const response = await drive.files.get({
+            fileId: '1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY'
+        });
+
+        const date = response.data.modifiedTime;
+        if(date === undefined)
+            return 0;
+
+        return new Date(date).getTime();
+    }
+    catch(err){
+        console.log('Error loading client secret file:', err);
+    }
+    return 0;
+}
