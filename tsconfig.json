@@ -1,33 +1,41 @@
 {
   "compilerOptions": {
-      "target": "ESNext",
-      "module": "commonjs",
-      "rootDir": "./src/",
-      "outDir": "./dist/",
-      "strict": true,
-      "moduleResolution": "node",
-      "importHelpers": true,
-      "experimentalDecorators": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "allowSyntheticDefaultImports": true,
-      "resolveJsonModule": true,
-      "forceConsistentCasingInFileNames": true,
-      "removeComments": true,
-      "typeRoots": [
-          "node_modules/@types"
-      ],
-      "sourceMap": false,
-      "baseUrl": "./"
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "esnext",
+    "lib": [
+      "ES6"
+    ],
+    "types": [
+      "reflect-metadata"
+    ],
+    "module": "commonjs",
+    "declaration": true,
+    "moduleResolution": "node",
+    "rootDir": "./src/",
+    "outDir": "./dist/",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "importHelpers": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": true,
+    "strict": true,
+    "sourceMap": false,
+    "baseUrl": "./"
   },
   "files": [
-      "src/index.ts"
+    "src/main.ts"
   ],
   "include": [
-      "./**/*.ts"
+    "./**/*.ts"
   ],
   "exclude": [
-      "node_modules",
-      "dist"
+    "node_modules",
+    "dist"
   ],
 }
