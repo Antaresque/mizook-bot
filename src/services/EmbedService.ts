@@ -1,11 +1,32 @@
 import { MessageEmbed } from "discord.js";
 import { Service } from "@antaresque/dissonance";
+import { TourneyResult, TourneyScore } from "src/types";
 
+const MIZOOK_COLOR = "#DDAACC";
 @Service()
 export class EmbedService {
+
+    generateTourneyEmbed(results: TourneyResult[]) {
+        return new MessageEmbed()
+            .setColor(MIZOOK_COLOR)
+            .setTitle(`Tourney calculation results`)
+            .addFields(results.filter(result => result.scores.length !== 0).map(result => this.generateFieldFromResult(result)));
+    }
+
+    generateFieldFromResult(result: TourneyResult): any {
+        const generateScoreString = (score: TourneyScore): string => {
+            return `${score.song} **${score.result}** ${score.rank} ${score.difficulty} ${score.constant} ${score.score.split('/').join(' ')} ${score.accuracy}%`;
+        };
+
+        return {
+            name: result.playerName,
+            value: result.scores.map(score => generateScoreString(score)).join('\n') ?? "No scores yet"
+        };
+    }
+    
     generateScoreEmbed(result: number, constant: number, diff: string, accuracy: number, scoreDataNum: number[], song: string, difficulty: string) {
         return new MessageEmbed()
-            .setColor("#DDAACC")
+            .setColor(MIZOOK_COLOR)
             .setTitle(`${song} [${difficulty.toUpperCase()}]`)
             .addFields(
                 { name: 'Result', value: `**${result.toFixed(2)}** [${constant.toFixed(2)} ${diff}] (*${this.calcRank(result)}*)` },

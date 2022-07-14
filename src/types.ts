@@ -13,3 +13,18 @@ export class ChartData {
         this.noteCount = nc;
     }
 }
+
+export type TourneyResult = {
+    playerName: string,
+    scores: TourneyScore[]
+}
+
+export type TourneyScore = {
+    song: string,
+    result: string,
+    rank: string,
+    difficulty: string,
+    constant: string,
+    score: string,
+    accuracy: string
+}
