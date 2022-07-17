@@ -48,13 +48,14 @@ export class TourneyCalculationService {
     addScores(user: User, scoreArray: (TourneyScore | null)[]) {
         const results = this._map.get(user.id);
         let counter = 0;
+        console.log(scoreArray);
 
         if(!results)
             return counter;
 
         for(let i = 0; i < 5; i++) {
-            const result = results[i-1];
-            const score = scoreArray[i-1];
+            const result = results[i];
+            const score = scoreArray[i];
             if(score) {
                 result.scores.push(score); 
                 counter++;
