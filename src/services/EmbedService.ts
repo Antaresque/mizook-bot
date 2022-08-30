@@ -36,7 +36,7 @@ export class EmbedService {
     }
 
     calcRank(constant: number): string {
-        if (constant >= 39)
+        if (constant >= 36)
             return "Space Gorilla";
         else if (constant >= 34)
             return "Gorilla";
