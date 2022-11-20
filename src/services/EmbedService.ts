@@ -14,8 +14,17 @@ export class EmbedService {
     }
 
     generateFieldFromResult(result: TourneyResult): any {
+        const calcAmountToAp = (score: string[]) => {
+            if(score.length !== 5)
+                return "";
+
+            const result = parseInt(score[1]) + parseInt(score[2]) * 2 + parseInt(score[3]) * 3 + parseInt(score[4]) * 3;
+
+            return `(-${result})`;
+        }
+        
         const generateScoreString = (score: TourneyScore): string => {
-            return `${score.song} **${score.result}** ${score.rank} ${score.difficulty} ${score.constant} ${score.score.split('/').join(' ')} ${score.accuracy}%`;
+            return `${score.song} **${score.result}** ${score.rank} ${score.difficulty} ${score.constant} ${score.score.split('/').join(' ')} ${calcAmountToAp(score.score.split('/'))} ${score.accuracy}%`;
         };
 
         return {
