@@ -18,10 +18,10 @@ export class GoogleDataService {
     
     private async updateConstants() {
         // updates constants every 30 minutes
-        const THIRTY_MINUTES = 1000 * 60 * 30;
+        const UPDATE_DELAY = process.env.UPDATE_DELAY ? parseInt(process.env.UPDATE_DELAY) : 1000 * 60 * 30;
         const current = Date.now();
       
-        if(this._lastModified + THIRTY_MINUTES > current)
+        if(this._lastModified + UPDATE_DELAY > current)
           return;
       
         this.logger.log("updateConstants, updating constants");
@@ -36,7 +36,7 @@ export class GoogleDataService {
             const sheets = google.sheets({version: 'v4', auth});
     
             const response = await sheets.spreadsheets.values.get({
-              spreadsheetId: '1zDnltetKoyL1WukubSmyPRaA06z_HQqp_uaaaml0Igs',
+              spreadsheetId: '1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY',
               range: 'Constants!A2:G1000',
             });
     
