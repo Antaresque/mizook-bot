@@ -53,7 +53,7 @@ export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
         }
 
         const embed = this.embedService.generateScoreEmbed(
-            scoreData?.result, constant, scoreData?.diff, scoreData?.accuracy, scoreData?.scoreValues, song!, difficulty!
+            scoreData?.result, constant, scoreData?.diff, scoreData?.accuracy, scoreData?.scoreValues, lookForSong.name, difficulty!
         );
         return await interaction.reply({ embeds: [embed] });
         

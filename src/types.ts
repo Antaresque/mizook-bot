@@ -5,12 +5,14 @@ export class ChartData {
     difficulty: Difficulty;
     constant: number;
     noteCount: number;
+    aliases: string[];
 
-    constructor(n: string, d: Difficulty, c: number, nc: number) {
+    constructor(n: string, d: Difficulty, c: number, nc: number, a: string[] = []) {
         this.name = n;
         this.difficulty = d;
         this.constant = c;
         this.noteCount = nc;
+        this.aliases = a;
     }
 }
 

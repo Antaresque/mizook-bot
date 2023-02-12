@@ -1,4 +1,4 @@
-lockfileVersion: 5.3
+lockfileVersion: 5.4
 
 specifiers:
   '@antaresque/dissonance': ^0.3.0
@@ -17,7 +17,7 @@ dependencies:
 
 devDependencies:
   '@types/node': 18.0.3
-  ts-node: 10.8.2_2dd5d46eecda2aef953638919121af58
+  ts-node: 10.8.2_fxk5i3xm3ivo7fjwhcizcinpla
   typescript: 4.7.4
 
 packages:
@@ -615,7 +615,7 @@ packages:
     resolution: {integrity: sha512-hvE+ZYXuINrx6Ei6D6hz+PTim0Uf++dYbK9FFifLNwQj+RwKquhQpn868yZsCtJYiclZF1u8l6WZxxKi+vv7Rg==}
     dev: false
 
-  /ts-node/10.8.2_2dd5d46eecda2aef953638919121af58:
+  /ts-node/10.8.2_fxk5i3xm3ivo7fjwhcizcinpla:
     resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
     hasBin: true
     peerDependencies:
