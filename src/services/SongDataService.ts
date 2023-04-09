@@ -34,4 +34,19 @@ export class SongDataService {
     public getSongDifficulties() {
         return ["Hard", "Expert", "Master"];
     }
+
+    public async findOCR(name: string | null, diff: string | null, noteCount: number | null) {
+        if(name === null || diff === null || noteCount === null)
+            return undefined;
+
+        const constants = await this.google.getConstants();
+        // find by noteCount and diff
+        const byNoteCount = constants.filter(data => data.noteCount === noteCount && data.difficulty === diff);
+
+        if(byNoteCount.length === 1)
+            return byNoteCount[0];
+
+        const noWSname = name.replace(/[^a-z0-9]/gi, '');
+        return byNoteCount.find(data => data.name.replace(/[^a-z0-9]/gi, '') === noWSname || data.aliases.map(t => t.replace(/[^a-z0-9]/gi, '')).includes(noWSname));
+    }
 }

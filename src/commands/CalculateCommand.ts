@@ -1,8 +1,7 @@
 import { CalculationService } from './../services/CalculationService';
 import { EmbedService } from './../services/EmbedService';
 import { SongDataService } from './../services/SongDataService';
-import { AutocompleteInteraction, CommandInteraction } from "discord.js";
-import { DissonanceCommandOptionType, DissonanceContext, DissonanceLogger, OnAutoComplete, OnCommandInteraction, SlashCommand } from "@antaresque/dissonance";
+import { DissonanceAutocompleteContext, DissonanceCommandContext, DissonanceCommandOptionType, DissonanceLogger, OnAutoComplete, OnCommandInteraction, SlashCommand } from "@antaresque/dissonance";
 
 @SlashCommand('calculate')
 export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
@@ -24,17 +23,17 @@ export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
         }
     }
 
-    async handle({ interaction }: DissonanceContext<CommandInteraction>) {
+    async handle({ interaction, reply }: DissonanceCommandContext) {
         const { options } = interaction;
 
-        const song = options.getString('song');
-        const difficulty = options.getString('difficulty');
-        const score = options.getString('score');
-        this.logger.log(`calculate: ${song} [${difficulty}] ${score}`, "INFO");
+        const song = options.get('song')?.value as string;
+        const difficulty = options.get('difficulty')?.value as string;
+        const score = options.get('score')?.value as string;
+        this.logger.info(`calculate: ${song} [${difficulty}] ${score}`);
 
         const lookForSong = await this.dataService.find(song, difficulty);
         if (lookForSong === undefined) {
-            this.logger.log("calculate: invalid arguments (song/difficulty)", 'WARN');
+            this.logger.warn("calculate: invalid arguments (song/difficulty)");
             return "Invalid arguments or chart wasn't found in database";
         }
         
@@ -42,24 +41,24 @@ export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
         const noteCount = lookForSong.noteCount;
 
         if (constant === undefined || score === null) {
-            this.logger.log("calculate: no constant/score found", 'WARN')
-            return "Invalid arguments or chart wasn't found in database";
+            this.logger.warn("calculate: no constant/score found")
+            return reply("Invalid arguments or chart wasn't found in database");
         }
 
         const scoreData = this.calcService.calculateScore(constant, score, noteCount);
         if (scoreData === undefined) {
-            this.logger.log("calculate: unable to calculate score", 'WARN')
-            return "Invalid score data";
+            this.logger.warn("calculate: unable to calculate score")
+            return reply("Invalid score data");
         }
 
         const embed = this.embedService.generateScoreEmbed(
             scoreData?.result, constant, scoreData?.diff, scoreData?.accuracy, scoreData?.scoreValues, lookForSong.name, difficulty!
         );
-        return await interaction.reply({ embeds: [embed] });
         
+        await interaction.reply({ embeds: [embed] });   
     }
 
-    async autocomplete({interaction}: DissonanceContext<AutocompleteInteraction>) {
+    async autocomplete({interaction, respond}: DissonanceAutocompleteContext) {
         const { options } = interaction;
 
         const songNames = await this.dataService.getSongNames();
@@ -67,6 +66,6 @@ export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
         const focusedValue = options.getFocused().toString().toLowerCase();
         const filtered = songNames?.filter(choice => choice.toLowerCase().includes(focusedValue));
         if(filtered !== undefined && filtered.length <= 25)
-            return filtered;
+            await respond(filtered);
     }
 }

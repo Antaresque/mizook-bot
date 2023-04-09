@@ -10,7 +10,7 @@ export class GoogleDataService {
     constructor(private logger: DissonanceLogger) {}
 
     public async getConstants() {
-        this.logger.log("getConstants request");
+        this.logger.info("getConstants request");
 
         await this.updateConstants();
         return this._constants;
@@ -24,7 +24,7 @@ export class GoogleDataService {
         if(this._lastModified + UPDATE_DELAY > current)
           return;
       
-        this.logger.log("updateConstants, updating constants");
+        this.logger.info("updateConstants, updating constants");
         this._lastModified = Date.now();
         this._constants = await this.readConstants();
     }
@@ -61,7 +61,7 @@ export class GoogleDataService {
             })
         }
         catch(err) {
-            console.log('Error loading client secret file:', err);
+            this.logger.info('Error loading client secret file:');
             return [];
         }
     }

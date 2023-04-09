@@ -1,5 +1,4 @@
-import { SlashCommand, OnCommandInteraction, DissonanceContext } from "@antaresque/dissonance";
-import { CommandInteraction, CacheType } from "discord.js";
+import { SlashCommand, OnCommandInteraction, DissonanceContext, DissonanceCommandContext } from "@antaresque/dissonance";
 import { TourneyCalculationService } from "./../services/TourneyCalculationService";
 
 @SlashCommand({
@@ -9,16 +8,20 @@ import { TourneyCalculationService } from "./../services/TourneyCalculationServi
 export class TourneyStopCommand implements OnCommandInteraction {
     constructor(private calc: TourneyCalculationService) { }
     
-    async handle({ interaction }: DissonanceContext<CommandInteraction<CacheType>>) {
+    async handle({ interaction }: DissonanceCommandContext) {
         const { user } = interaction;
 
-        if(!this.calc.checkUser(user))
-            return await interaction.reply({ content: "No active calculation found, try using /t-start first", ephemeral: true });
+        if(!this.calc.checkUser(user)){
+            await interaction.reply({ content: "No active calculation found, try using /t-start first", ephemeral: true });
+            return;
+        }
 
         const resultEmbed = this.calc.getResultForUser(user);
-        if(!resultEmbed)
-            return await interaction.reply({ content: "No active calculation found, try using /t-start first", ephemeral: true });
+        if(!resultEmbed){
+            await interaction.reply({ content: "No active calculation found, try using /t-start first", ephemeral: true });
+            return;
+        }
 
-        return await interaction.reply({ embeds: [resultEmbed] })
+        await interaction.reply({ embeds: [resultEmbed] })
     }
 }

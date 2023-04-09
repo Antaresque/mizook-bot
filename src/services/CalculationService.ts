@@ -2,8 +2,6 @@ import { DissonanceLogger, Service } from "@antaresque/dissonance";
 
 @Service()
 export class CalculationService {
-    constructor(private logger: DissonanceLogger) {}
-
     public calculateScore(constant: number, score: string, noteCount: number) {
         const scoreData = score.split('/');
       

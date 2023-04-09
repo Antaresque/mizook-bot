@@ -1,6 +1,5 @@
 import { SongDataService } from './../services/SongDataService';
-import { DissonanceCommandOptionType, DissonanceContext, DissonanceReply, OnAutoComplete, OnCommandInteraction, SlashCommand } from "@antaresque/dissonance";
-import { CommandInteraction, CacheType, AutocompleteInteraction, Interaction, CommandInteractionOptionResolver } from "discord.js";
+import { DissonanceAutocompleteContext, DissonanceCommandContext, DissonanceCommandOptionType, OnAutoComplete, OnCommandInteraction, SlashCommand } from "@antaresque/dissonance";
 import { TourneyCalculationService } from "./../services/TourneyCalculationService";
 
 // start, calc, stop
@@ -27,21 +26,23 @@ export class TourneyCalculateCommand implements OnCommandInteraction, OnAutoComp
         }
     }
 
-    async handle({ interaction }: DissonanceContext<CommandInteraction<CacheType>>) {
+    async handle({ interaction }: DissonanceCommandContext) {
         const { user, options } = interaction;
 
-        if(!this.calcService.checkUser(user))
-            return await interaction.reply({ content: "No active calculation found, try using /t-start first", ephemeral: true });
+        if(!this.calcService.checkUser(user)){
+            await interaction.reply({ content: "No active calculation found, try using /t-start first", ephemeral: true });
+            return;
+        }
         
-        const song = options.getString("song", true);
+        const song = options.get("song", true).value as string;
 
         const scoreArray = await this.getScoresFromOptions(options);
-        const amountOfScores = await this.calcService.addScores(user, scoreArray);
+        const amountOfScores = this.calcService.addScores(user, scoreArray);
 
-        return await interaction.reply({ content: `Finished parsing, counted scores: ${amountOfScores}`, ephemeral: true })
+        await interaction.reply({ content: `Finished parsing, counted scores: ${amountOfScores}`, ephemeral: true })
     }
 
-    async autocomplete({ interaction }: DissonanceContext<AutocompleteInteraction<CacheType>>) {
+    async autocomplete({ interaction, respond }: DissonanceAutocompleteContext) {
         const { options } = interaction;
 
         const songNames = await this.dataService.getSongNames();
@@ -49,15 +50,15 @@ export class TourneyCalculateCommand implements OnCommandInteraction, OnAutoComp
         const focusedValue = options.getFocused().toString().toLowerCase();
         const filtered = songNames?.filter(choice => choice.toLowerCase().includes(focusedValue));
         if(filtered !== undefined && filtered.length <= 25)
-            return filtered;
+            await respond(filtered);
     }
 
-    async getScoresFromOptions(options: Omit<CommandInteractionOptionResolver<CacheType>, "getMessage" | "getFocused">) {
-        const song = options.getString('song', true);
+    async getScoresFromOptions(options: any) {
+        const song = options.get('song', true).value as string;
         const playerArray = [];
 
         for(let i = 1; i <= 5; i++) {
-            const argument = options.getString(`p${i}`);
+            const argument = options.get(`p${i}`)?.value as string;
 
             const strArray = argument?.split(" ");
             if(!strArray || strArray.length !== 2) {

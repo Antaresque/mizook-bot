@@ -1,5 +1,4 @@
-import { SlashCommand, OnCommandInteraction, DissonanceCommandOptionType, DissonanceContext } from "@antaresque/dissonance";
-import { CommandInteraction, CacheType } from "discord.js";
+import { SlashCommand, OnCommandInteraction, DissonanceCommandOptionType, DissonanceContext, DissonanceCommandContext } from "@antaresque/dissonance";
 import { TourneyCalculationService } from "./../services/TourneyCalculationService";
 
 @SlashCommand('t-start')
@@ -19,17 +18,19 @@ export class TourneyStartCommand implements OnCommandInteraction {
 
     constructor(private service: TourneyCalculationService) { }
 
-    async handle({ interaction }: DissonanceContext<CommandInteraction<CacheType>>) {
+    async handle({ interaction }: DissonanceCommandContext) {
         const { options, user } = interaction;
 
-        const players = options.getString("playernames", true);
+        const players = options.get("playernames", true).value as string;
         const playerNames = players.split(';');
 
-        if(playerNames.length > 5 || playerNames.length === 0)
-            return await interaction.reply({ content: "Invalid or too many player names, check your input again.",  ephemeral: true });
+        if(playerNames.length > 5 || playerNames.length === 0){
+            await interaction.reply({ content: "Invalid or too many player names, check your input again.",  ephemeral: true });
+            return;
+        }
 
         this.service.addUser(playerNames, user);
         
-        return await interaction.reply({ content: "Storing your scores! Use /t-calc to start calculations.",  ephemeral: true })
+        await interaction.reply({ content: "Storing your scores! Use /t-calc to start calculations.",  ephemeral: true })
     }
 }

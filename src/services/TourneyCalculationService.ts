@@ -1,6 +1,6 @@
 import { CalculationService } from './CalculationService';
-import { Service } from "@antaresque/dissonance";
-import { User } from "discord.js";
+import { DissonanceLogger, Service } from "@antaresque/dissonance";
+import { EmbedBuilder, User } from "discord.js";
 import { EmbedService } from './EmbedService';
 import { SongDataService } from './SongDataService';
 import { TourneyResult, TourneyScore } from './../types';
@@ -9,9 +9,9 @@ import { TourneyResult, TourneyScore } from './../types';
 export class TourneyCalculationService {
     private _map: Map<string, TourneyResult[]> = new Map();
 
-    constructor(private data: SongDataService, private embed: EmbedService, private calc: CalculationService) { }
+    constructor(private data: SongDataService, private embed: EmbedService, private calc: CalculationService, private readonly logger: DissonanceLogger) { }
 
-    getResultForUser(user: User) {
+    getResultForUser(user: User): EmbedBuilder | null {
         if(!this._map.has(user.id))
             return null;
 
@@ -48,7 +48,7 @@ export class TourneyCalculationService {
     addScores(user: User, scoreArray: (TourneyScore | null)[]) {
         const results = this._map.get(user.id);
         let counter = 0;
-        console.log(scoreArray);
+        //this.logger.info(scoreArray);
 
         if(!results)
             return counter;
@@ -62,7 +62,7 @@ export class TourneyCalculationService {
             }
         }
 
-        console.log("current state of results: " + JSON.stringify(results));
+        this.logger.info("current state of results: " + JSON.stringify(results));
         return counter;
     }
     async parseScore(score: string, song: string, difficulty: 'MASTER' | 'EXPERT' | 'HARD') {
