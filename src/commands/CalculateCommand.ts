@@ -34,7 +34,7 @@ export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
         const lookForSong = await this.dataService.find(song, difficulty, guildId);
         if (lookForSong === undefined) {
             this.logger.warn("calculate: invalid arguments (song/difficulty)");
-            return "Invalid arguments or chart wasn't found in database";
+            return reply("Invalid arguments or chart wasn't found in database");
         }
         
         const constant = lookForSong.constant;
