@@ -84,13 +84,13 @@ export class GoogleDataService {
                 }
             case "986099686005960796": //39s
                 return {
-                    spreadsheetId: "1B8tX9VL2PcSJKyuHFVd2UT_8kYlY4ZdwHwg9MfWOPug",
+                    spreadsheetId: "1GMbeExLzQcSH41fBBSFxx-ZFPZk7BfLHS8_62iMnfyc",
                     range: 'Constants!A2:G1000' 
                 }
             case "109791028801753088": //test
                 return {
-                    spreadsheetId: "1SGtJBMh3jeCWuAlIWY8X4fGWRiH4MQRq2157F2qUfzc",
-                    range: 'Arkusz!A2:G1000' 
+                    spreadsheetId: "1GMbeExLzQcSH41fBBSFxx-ZFPZk7BfLHS8_62iMnfyc",
+                    range: 'Constants!A2:G1000' 
                 }
             default:
                 return {
