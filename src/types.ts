@@ -30,3 +30,8 @@ export type TourneyScore = {
     score: string,
     accuracy: string
 }
+
+export type ConstantRecord = {
+    data: ChartData[],
+    lastModified: number
+}

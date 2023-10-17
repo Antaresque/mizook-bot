@@ -5,26 +5,26 @@ import { Service } from "@antaresque/dissonance";
 export class SongDataService {
     constructor(private google: GoogleDataService) { }
 
-    public async find(name: string | null, diff: string | null) {
+    public async find(name: string | null, diff: string | null, serverId: string | null = null) {
         if(name === null || diff === null)
             return undefined;
 
-        return (await this.findByName(name))?.find(data => data.difficulty === diff);
+        return (await this.findByName(name, serverId))?.find(data => data.difficulty === diff);
     }
 
-    public async findByName(name: string | null) {
+    public async findByName(name: string | null, serverId: string | null = null) {
         if(name === null)
             return undefined;
 
-        return (await this.google.getConstants()).filter(data => name === data.name || data.aliases.includes(name));
+        return (await this.google.getConstants(serverId)).filter(data => name === data.name || data.aliases.includes(name));
     }
 
-    public async getChartData() {
-        return await this.google.getConstants();
+    public async getChartData(serverId: string | null = null) {
+        return await this.google.getConstants(serverId);
     }
 
-    public async getSongNames() {
-        const constants = await this.google.getConstants();
+    public async getSongNames(serverId: string | null = null) {
+        const constants = await this.google.getConstants(serverId);
         const names = constants.map(chart => chart.name);
         const aliases = constants.map(chart => chart.aliases).flat();
 
@@ -39,7 +39,7 @@ export class SongDataService {
         if(name === null || diff === null || noteCount === null)
             return undefined;
 
-        const constants = await this.google.getConstants();
+        const constants = await this.google.getConstants(null);
         // find by noteCount and diff
         const byNoteCount = constants.filter(data => data.noteCount === noteCount && data.difficulty === diff);
 

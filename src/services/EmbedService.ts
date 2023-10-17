@@ -10,7 +10,17 @@ export class EmbedService {
         return new EmbedBuilder()
             .setColor(MIZOOK_COLOR)
             .setTitle(`Tourney calculation results`)
-            .addFields(results.filter(result => result.scores.length !== 0).map(result => this.generateFieldFromResult(result)));
+            .addFields({
+                name: "Results",
+                value: results.map(result => this.generateFieldFromResult(result)).join('\n')
+            });
+    }
+
+    generateOCRTourneyEmbed(results: any[]) {
+        return new EmbedBuilder()
+            .setColor(MIZOOK_COLOR)
+            .setTitle(`Tourney calculation results`)
+            .addFields(results.filter(result => result.scores.length !== 0).map(result => this.generateFieldFromOCRResult(result)));
     }
 
     generateFieldFromResult(result: TourneyResult): any {
@@ -31,6 +41,10 @@ export class EmbedService {
             name: result.playerName,
             value: result.scores.map(score => generateScoreString(score)).join('\n') ?? "No scores yet"
         };
+    }
+
+    generateFieldFromOCRResult(result: any): any {
+        return `${result.name}\t${result.title}\t${result.difficulty}\t${result.score.great}\t${result.score.good}\t${result.score.bad}\t${result.score.miss}`;
     }
     
     generateScoreEmbed(result: number, constant: number, diff: string, accuracy: number, scoreDataNum: number[], song: string, difficulty: string, isSpoiler: boolean = false) {

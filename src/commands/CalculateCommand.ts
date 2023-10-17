@@ -24,14 +24,14 @@ export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
     }
 
     async handle({ interaction, reply }: DissonanceCommandContext) {
-        const { options } = interaction;
+        const { options, guildId } = interaction;
 
         const song = options.get('song')?.value as string;
         const difficulty = options.get('difficulty')?.value as string;
         const score = options.get('score')?.value as string;
         this.logger.info(`calculate: ${song} [${difficulty}] ${score}`);
 
-        const lookForSong = await this.dataService.find(song, difficulty);
+        const lookForSong = await this.dataService.find(song, difficulty, guildId);
         if (lookForSong === undefined) {
             this.logger.warn("calculate: invalid arguments (song/difficulty)");
             return "Invalid arguments or chart wasn't found in database";
@@ -59,9 +59,9 @@ export class CalculateCommand implements OnCommandInteraction, OnAutoComplete {
     }
 
     async autocomplete({interaction, respond}: DissonanceAutocompleteContext) {
-        const { options } = interaction;
+        const { options, guildId } = interaction;
 
-        const songNames = await this.dataService.getSongNames();
+        const songNames = await this.dataService.getSongNames(guildId);
 
         const focusedValue = options.getFocused().toString().toLowerCase();
         const filtered = songNames?.filter(choice => choice.toLowerCase().includes(focusedValue));

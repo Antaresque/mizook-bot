@@ -27,7 +27,7 @@ export class TourneyCalculateCommand implements OnCommandInteraction, OnAutoComp
     }
 
     async handle({ interaction }: DissonanceCommandContext) {
-        const { user, options } = interaction;
+        const { user, options, guildId } = interaction;
 
         if(!this.calcService.checkUser(user)){
             await interaction.reply({ content: "No active calculation found, try using /t-start first", ephemeral: true });
@@ -36,16 +36,16 @@ export class TourneyCalculateCommand implements OnCommandInteraction, OnAutoComp
         
         const song = options.get("song", true).value as string;
 
-        const scoreArray = await this.getScoresFromOptions(options);
+        const scoreArray = await this.getScoresFromOptions(options, guildId);
         const amountOfScores = this.calcService.addScores(user, scoreArray);
 
         await interaction.reply({ content: `Finished parsing, counted scores: ${amountOfScores}`, ephemeral: true })
     }
 
     async autocomplete({ interaction, respond }: DissonanceAutocompleteContext) {
-        const { options } = interaction;
+        const { options, guildId } = interaction;
 
-        const songNames = await this.dataService.getSongNames();
+        const songNames = await this.dataService.getSongNames(guildId);
 
         const focusedValue = options.getFocused().toString().toLowerCase();
         const filtered = songNames?.filter(choice => choice.toLowerCase().includes(focusedValue));
@@ -53,7 +53,7 @@ export class TourneyCalculateCommand implements OnCommandInteraction, OnAutoComp
             await respond(filtered);
     }
 
-    async getScoresFromOptions(options: any) {
+    async getScoresFromOptions(options: any, guildId: string | null) {
         const song = options.get('song', true).value as string;
         const playerArray = [];
 
@@ -73,7 +73,7 @@ export class TourneyCalculateCommand implements OnCommandInteraction, OnAutoComp
                 continue;
             }
 
-            const parsedScore = await this.calcService.parseScore(score, song, parsedDiff);
+            const parsedScore = await this.calcService.parseScore(score, song, parsedDiff, guildId);
             if(!parsedScore) {
                 playerArray.push(null);
                 continue;

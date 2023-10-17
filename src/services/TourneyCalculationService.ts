@@ -65,8 +65,8 @@ export class TourneyCalculationService {
         this.logger.info("current state of results: " + JSON.stringify(results));
         return counter;
     }
-    async parseScore(score: string, song: string, difficulty: 'MASTER' | 'EXPERT' | 'HARD') {
-        const songData = (await this.data.getChartData()).find(s => s.name === song && s.difficulty.toUpperCase() === difficulty);
+    async parseScore(score: string, song: string, difficulty: 'MASTER' | 'EXPERT' | 'HARD', serverId: string | null = null) {
+        const songData = (await this.data.getChartData(serverId)).find(s => s.name === song && s.difficulty.toUpperCase() === difficulty);
         if(!songData)
             return null;
 

@@ -1,44 +1,53 @@
+import { ConstantRecord } from './../types';
 import { DissonanceLogger, Service } from "@antaresque/dissonance";
 import { google } from "googleapis";
 import { ChartData } from "../types";
 
+const DEFAULT_SERVER = '980783169735364658';
 @Service()
 export class GoogleDataService {
-    private _constants: ChartData[] = [];
-    private _lastModified: number = -1;
+    private _constants: Record<string, ConstantRecord> = {};
 
     constructor(private logger: DissonanceLogger) {}
 
-    public async getConstants() {
+    public async getConstants(serverId: string | null) {
         this.logger.info("getConstants request");
 
-        await this.updateConstants();
-        return this._constants;
+        const server = serverId ?? DEFAULT_SERVER;
+
+        await this.updateConstants(server);
+        return this._constants[server].data;
     }
     
-    private async updateConstants() {
+    private async updateConstants(server: string) {
+        const serverData = this._constants[server];
+
         // updates constants every 30 minutes
         const UPDATE_DELAY = process.env.UPDATE_DELAY ? parseInt(process.env.UPDATE_DELAY) : 1000 * 60 * 30;
         const current = Date.now();
       
-        if(this._lastModified + UPDATE_DELAY > current)
+        if(serverData !== undefined && serverData.lastModified + UPDATE_DELAY > current)
           return;
       
         this.logger.info("updateConstants, updating constants");
-        this._lastModified = Date.now();
-        this._constants = await this.readConstants();
+        const newServerData = {
+            lastModified: Date.now(),
+            data: await this.readConstants(server)
+        }
+
+        if(newServerData.data.length > 0)
+            this._constants[server] = newServerData;
     }
 
-    private async readConstants() {
+    private async readConstants(server: string) {
         try {
+            const spreadsheetLocation = this.getSpreadsheetByServer(server);
+
             const secret = process.env.GOOGLE_SECRET ?? "";
             const auth = google.auth.fromAPIKey(secret);
             const sheets = google.sheets({version: 'v4', auth});
     
-            const response = await sheets.spreadsheets.values.get({
-              spreadsheetId: '1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY',
-              range: 'Constants!A2:G1000',
-            });
+            const response = await sheets.spreadsheets.values.get(spreadsheetLocation);
     
             const { values } = response.data;
     
@@ -63,6 +72,31 @@ export class GoogleDataService {
         catch(err) {
             this.logger.info('Error loading client secret file:');
             return [];
+        }
+    }
+
+    private getSpreadsheetByServer(server: string) {
+        switch(server) {
+            case "980783169735364658": //cc
+                return {
+                    spreadsheetId: "1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY",
+                    range: 'Constants!A2:G1000' 
+                }
+            case "986099686005960796": //39s
+                return {
+                    spreadsheetId: "1B8tX9VL2PcSJKyuHFVd2UT_8kYlY4ZdwHwg9MfWOPug",
+                    range: 'Constants!A2:G1000' 
+                }
+            case "109791028801753088": //test
+                return {
+                    spreadsheetId: "1SGtJBMh3jeCWuAlIWY8X4fGWRiH4MQRq2157F2qUfzc",
+                    range: 'Arkusz!A2:G1000' 
+                }
+            default:
+                return {
+                    spreadsheetId: "1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY",
+                    range: 'Constants!A2:G1000' 
+                }
         }
     }
 }

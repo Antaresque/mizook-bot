@@ -2,14 +2,14 @@ import { DissonanceCommandContext, OnCommandInteraction, SlashCommand } from "@a
 import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { OCRService } from "../services/OCRService";
 
-@SlashCommand('ss')
-export class ScreenshotCommand implements OnCommandInteraction {
+@SlashCommand('t-ocr')
+export class ScreenshotTourneyCommand implements OnCommandInteraction {
     constructor(private ocrService: OCRService) { }
 
     async register() {
         return {
-            name: 'ss',
-            description: 'Analyze last image in channel'
+            name: 't-ocr',
+            description: 'Read data from coop tourney screenshot(s)'
         }
     }
 
@@ -37,7 +37,7 @@ export class ScreenshotCommand implements OnCommandInteraction {
     }
 
     private async handleForLink(msg: Message<boolean>, interaction: CommandInteraction) {
-        const embed = await this.ocrService.urlIntoEmbed(msg.content);
+        const embed = await this.ocrService.urlIntoTourneyEmbed(msg.content);
         if(embed === undefined) {
             await interaction.reply({ content: "Unable to find image", ephemeral: true });
             return;
@@ -52,7 +52,7 @@ export class ScreenshotCommand implements OnCommandInteraction {
         const embeds: EmbedBuilder[] = [];
         for(const v of msg.attachments) {
             const attachment = v[1];
-            const embed = await this.ocrService.urlIntoEmbed(attachment.url);
+            const embed = await this.ocrService.urlIntoTourneyEmbed(attachment.url);
             if(embed !== undefined)
                 embeds.push(embed);
         }   
