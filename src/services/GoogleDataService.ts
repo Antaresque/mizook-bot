@@ -80,22 +80,22 @@ export class GoogleDataService {
             case "980783169735364658": //cc
                 return {
                     spreadsheetId: "1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY",
-                    range: 'Constants!A2:G1000' 
+                    range: 'Constants!A2:G5000' 
                 }
             case "986099686005960796": //39s
                 return {
                     spreadsheetId: "1GMbeExLzQcSH41fBBSFxx-ZFPZk7BfLHS8_62iMnfyc",
-                    range: 'Constants!A2:G1000' 
+                    range: 'Constants!A2:G5000' 
                 }
             case "109791028801753088": //test
                 return {
                     spreadsheetId: "1GMbeExLzQcSH41fBBSFxx-ZFPZk7BfLHS8_62iMnfyc",
-                    range: 'Constants!A2:G1000' 
+                    range: 'Constants!A2:G5000' 
                 }
             default:
                 return {
                     spreadsheetId: "1egidbEhq40Zf0NNYzHBXIAZg4Nj0Wi867DOgOR70cIY",
-                    range: 'Constants!A2:G1000' 
+                    range: 'Constants!A2:G5000' 
                 }
         }
     }
