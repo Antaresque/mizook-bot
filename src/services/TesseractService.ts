@@ -33,7 +33,7 @@ export class TesseractService {
         this.workerDigits   = await createWorker();
 
         await this.workerEnglish.setParameters({
-            "tessedit_pageseg_mode": PSM.AUTO,
+            "tessedit_pageseg_mode": PSM.AUTO_ONLY,
             "user_defined_dpi": "71" 
         });
         await this.workerJapanese.setParameters({
@@ -41,7 +41,7 @@ export class TesseractService {
             "user_defined_dpi": "71" 
         });
         await this.workerDigits.setParameters({
-            "tessedit_pageseg_mode": PSM.AUTO,
+            "tessedit_pageseg_mode": PSM.SINGLE_BLOCK,
             "tessedit_char_whitelist": "0123456789",
             "user_defined_dpi": "71" 
         });

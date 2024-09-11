@@ -40,13 +40,15 @@ export class ScreenshotCommand implements OnCommandInteraction {
     }
 
     private async handleForLink(msg: Message<boolean>, interaction: CommandInteraction) {
+        await interaction.deferReply({ ephemeral: false });
+        
         const embed = await this.ocrService.urlIntoEmbed(msg.content);
         if(embed === undefined) {
-            await interaction.reply({ content: "Unable to find image", ephemeral: true });
+            await interaction.editReply({ content: "Unable to find or read image" });
             return;
         }
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
     }
 
         
@@ -61,8 +63,8 @@ export class ScreenshotCommand implements OnCommandInteraction {
                 embeds.push(embed);
         }   
 
-        if(embeds === undefined) {
-            await interaction.editReply({ content: "Unable to find image" });
+        if(embeds.length === 0) {
+            await interaction.editReply({ content: "Unable to find or read image" });
             return;
         }
         await interaction.editReply({ embeds: [...embeds] });

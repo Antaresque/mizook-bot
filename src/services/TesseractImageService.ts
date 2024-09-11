@@ -91,7 +91,6 @@ export class TesseractImageService {
           else { // tablet size
             song =  { left: Math.floor(0.19 * width), top: Math.floor(0.02 * height), width: Math.floor(0.4 * width), height: Math.floor(0.05 * height) }
             acc =  { left: Math.floor(0.22 * width), top: Math.floor(0.55 * height), width: Math.floor(0.08 * width), height: Math.floor(0.3 * height) }
-      
           }
         }
       

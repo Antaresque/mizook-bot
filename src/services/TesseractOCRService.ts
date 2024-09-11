@@ -32,7 +32,7 @@ export class TesseractOCRService {
         }
         catch(e) {
             this.logger.info("TesseractOCR error, aborting task" + e);
-            return;
+            return undefined;
         }
     }
 
@@ -48,6 +48,7 @@ export class TesseractOCRService {
         const title = titleData.text.trim();
 
         const accuracyData = data.accuracyData.data;
+        this.logger.debug(accuracyData.text);
         const accuracy = accuracyData.text.split('\n').map(_ => parseInt(_)).filter(_ => isFinite(_));
       
         this.logger.debug(`${title} [${accuracy}] (conf: ${accuracyData.confidence}) \n`);
