@@ -1,22 +1,25 @@
-import { DissonanceCommandContext, OnCommandInteraction, SlashCommand } from "@antaresque/dissonance";
+import { DissonanceCommandContext, DissonanceCommandOptionType, DissonanceLogger, OnCommandInteraction, SlashCommand } from "@antaresque/dissonance";
 import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { OCRService } from "../services/OCRService";
+import { TesseractOCRService } from "../services/TesseractOCRService";
 
 @SlashCommand('ss')
 export class ScreenshotCommand implements OnCommandInteraction {
-    constructor(private ocrService: OCRService) { }
+    constructor(private ocrService: TesseractOCRService, private logger: DissonanceLogger) { }
 
     async register() {
         return {
             name: 'ss',
-            description: 'Analyze last image in channel'
+            description: 'Analyze last image in channel',
         }
     }
 
     private isAttachmentImage = (msg: Message<boolean>) => (msg.attachments.size > 0 && this.isImage(msg.attachments.first()!.url));
     private isLinkImage = (url: string) => (url.startsWith("http") && this.isImage(url));
     private isImage = (url: string) => {
-        return(url.match(/\.(jpeg|jpg|gif|png|jfif)$/) != null);
+        //return(url.match(/\.(jpeg|jpg|gif|png|jfif)$/) != null);
+        // temporary acceptance of all images (unnecessary)
+        return true;
     };
 
     async handle({ interaction }: DissonanceCommandContext) {
@@ -48,7 +51,8 @@ export class ScreenshotCommand implements OnCommandInteraction {
 
         
     private async handleForAttachments(msg: Message<boolean>, interaction: CommandInteraction) {
-            
+        await interaction.deferReply({ ephemeral: false });
+
         const embeds: EmbedBuilder[] = [];
         for(const v of msg.attachments) {
             const attachment = v[1];
@@ -58,9 +62,9 @@ export class ScreenshotCommand implements OnCommandInteraction {
         }   
 
         if(embeds === undefined) {
-            await interaction.reply({ content: "Unable to find image", ephemeral: true });
+            await interaction.editReply({ content: "Unable to find image" });
             return;
         }
-        await interaction.reply({ embeds: embeds });
+        await interaction.editReply({ embeds: [...embeds] });
     }
 }

@@ -1,5 +1,7 @@
 import { GoogleDataService } from './GoogleDataService';
 import { Service } from "@antaresque/dissonance";
+import { levenshtein } from '../util/levenshtein';
+import { ChartData } from 'src/types';
 
 @Service()
 export class SongDataService {
@@ -48,5 +50,25 @@ export class SongDataService {
 
         const noWSname = name.replace(/[^a-z0-9]/gi, '');
         return byNoteCount.find(data => data.name.replace(/[^a-z0-9]/gi, '') === noWSname || data.aliases.map(t => t.replace(/[^a-z0-9]/gi, '')).includes(noWSname));
+    }
+
+    public async findOCRWithoutDiff(name: string | null, noteCount: number | null) {
+        if(name === null || noteCount === null)
+            return undefined;
+
+        const constants = await this.google.getConstants(null);
+        // find by noteCount and diff
+        const byNoteCount = constants.filter(data => data.noteCount === noteCount);
+
+        if(byNoteCount.length === 1)
+            return byNoteCount[0];
+
+        if(byNoteCount.length === 0)
+            return undefined;
+
+        const preparedTitle = name.replace(/\s+/g, '');
+        const diffMap: Array<[ChartData, number]> = byNoteCount.map(_ => [_, levenshtein()(preparedTitle, _.name.replace(/\s+/g, ''))]);
+        const bestMatch = diffMap.reduce((best, current) => best[1] > current[1] ? best : current);
+        return bestMatch[0];
     }
 }
