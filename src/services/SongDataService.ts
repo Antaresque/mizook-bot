@@ -1,11 +1,11 @@
 import { GoogleDataService } from './GoogleDataService';
-import { Service } from "@antaresque/dissonance";
+import { DissonanceLogger, Service } from "@antaresque/dissonance";
 import { levenshtein } from '../util/levenshtein';
 import { ChartData } from 'src/types';
 
 @Service()
 export class SongDataService {
-    constructor(private google: GoogleDataService) { }
+    constructor(private google: GoogleDataService, private logger: DissonanceLogger) { }
 
     public async find(name: string | null, diff: string | null, serverId: string | null = null) {
         if(name === null || diff === null)
@@ -37,6 +37,7 @@ export class SongDataService {
         return ["Hard", "Expert", "Master"];
     }
 
+    // deprecated
     public async findOCR(name: string | null, diff: string | null, noteCount: number | null) {
         if(name === null || diff === null || noteCount === null)
             return undefined;
@@ -71,4 +72,35 @@ export class SongDataService {
         const bestMatch = diffMap.reduce((best, current) => best[1] > current[1] ? best : current);
         return bestMatch[0];
     }
+
+    public async findOCRWithDiff(array: {difficulty: string, noteCount: number}[]) {
+        if(array.length === 0)
+            return;
+
+        const constants = await this.google.getConstants(null);
+        // find by noteCount and diff
+        const results: ChartData[][] = [];
+        for(let { difficulty, noteCount } of array) {
+            const byNoteCount = constants.filter(data => noteCount === data.noteCount && difficulty.toUpperCase() === data.difficulty.toUpperCase());
+            results.push(byNoteCount);
+        }       
+
+        const names = results.map(_ => _.map(_ => _.name));
+        if(names.length === 0)
+            return;
+
+        const intersectingValues = names.reduce((acc, array) => this.intersect(acc, array));
+        if(intersectingValues.length !== 1)
+            return;
+
+        const songData = constants.filter(data => data.name === intersectingValues[0]);
+        return songData;
+    }
+
+    private intersect(a: string[], b: string[]) {
+        var setA = new Set(a);
+        var setB = new Set(b);
+        var intersection = new Set([...setA].filter(x => setB.has(x)));
+        return Array.from(intersection);
+      }
 }

@@ -64,4 +64,32 @@ export class TesseractService {
 
         return { mainData, secondaryData, accuracyData }
     }
+
+    public async detectFromCoopBuffers(buffers: {
+        nicknameBuffers: Buffer[];
+        difficultyBuffers: Buffer[];
+        accuracyBuffers: Buffer[];
+    }, version: "jpcoop") {
+        await this.checkTesseractWorkers();
+        
+        const nicknameBlocks = [];
+        for(let image of buffers.nicknameBuffers) {
+            const block = await this.workerEnglish.recognize(image);
+            nicknameBlocks.push(block);
+        }
+
+        const difficultyBlocks = [];
+        for(let image of buffers.difficultyBuffers) {
+            const block = await this.workerEnglish.recognize(image);
+            difficultyBlocks.push(block);
+        }
+
+        const accuracyBlocks = [];
+        for(let image of buffers.accuracyBuffers) {
+            const block = await this.workerDigits.recognize(image);
+            accuracyBlocks.push(block);
+        }
+
+        return { nicknameBlocks, difficultyBlocks, accuracyBlocks };
+    }
 }

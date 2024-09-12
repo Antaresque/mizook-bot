@@ -1,10 +1,12 @@
+import { EmbedService } from '../services/EmbedService';
 import { DissonanceCommandContext, OnCommandInteraction, SlashCommand } from "@antaresque/dissonance";
 import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { OCRService } from "../services/OCRService";
+import { TesseractOCRService } from "../services/TesseractOCRService";
 
 @SlashCommand('t-ocr')
 export class ScreenshotTourneyCommand implements OnCommandInteraction {
-    constructor(private ocrService: OCRService) { }
+    constructor(private ocrService: TesseractOCRService, private embedService: EmbedService) { }
 
     async register() {
         return {
@@ -16,7 +18,8 @@ export class ScreenshotTourneyCommand implements OnCommandInteraction {
     private isAttachmentImage = (msg: Message<boolean>) => (msg.attachments.size > 0 && this.isImage(msg.attachments.first()!.url));
     private isLinkImage = (url: string) => (url.startsWith("http") && this.isImage(url));
     private isImage = (url: string) => {
-        return(url.match(/\.(jpeg|jpg|gif|png|jfif)$/) != null);
+        //return(url.match(/\.(jpeg|jpg|gif|png|jfif)$/) != null);
+        return true;
     };
 
     async handle({ interaction }: DissonanceCommandContext) {
@@ -37,30 +40,42 @@ export class ScreenshotTourneyCommand implements OnCommandInteraction {
     }
 
     private async handleForLink(msg: Message<boolean>, interaction: CommandInteraction) {
-        const embed = await this.ocrService.urlIntoTourneyEmbed(msg.content);
-        if(embed === undefined) {
-            await interaction.reply({ content: "Unable to find image", ephemeral: true });
+        await interaction.deferReply({ ephemeral: true });
+
+        const data = await this.ocrService.urlIntoData(msg.content);
+        if(data?.dataCoop === undefined) {
+            await interaction.editReply({ content: "Unable to find image"});
             return;
         }
 
-        await interaction.reply({ embeds: [embed] });
+        const content = this.embedService.generateCoopRaw(data?.dataCoop);
+        if(content === undefined) {
+            await interaction.editReply({ content: "Unable to find image"});
+            return;
+        }
+
+        await interaction.editReply({ content: "```" + content + "```"});
     }
 
         
     private async handleForAttachments(msg: Message<boolean>, interaction: CommandInteraction) {
-            
-        const embeds: EmbedBuilder[] = [];
+        await interaction.deferReply({ ephemeral: true }); 
+
+        let embeds: string = "```";
         for(const v of msg.attachments) {
             const attachment = v[1];
-            const embed = await this.ocrService.urlIntoTourneyEmbed(attachment.url);
-            if(embed !== undefined)
-                embeds.push(embed);
+            const data = await this.ocrService.urlIntoData(attachment.url);
+            if(data?.dataCoop === undefined)
+                continue;
+            const content = this.embedService.generateCoopRaw(data.dataCoop);
+            if(content !== undefined)
+                embeds += content;
         }   
 
         if(embeds === undefined) {
-            await interaction.reply({ content: "Unable to find image", ephemeral: true });
+            await interaction.editReply({ content: "Unable to find image"});
             return;
         }
-        await interaction.reply({ embeds: embeds });
+        await interaction.editReply({ content: embeds + "```" });
     }
 }

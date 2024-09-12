@@ -1,4 +1,4 @@
-export type Difficulty = "Hard" | "Expert" | "Master";
+export type Difficulty = "Easy" | "Normal" | "Hard" | "Expert" | "Master" | "Append";
 
 export class ChartData {
     name: string;

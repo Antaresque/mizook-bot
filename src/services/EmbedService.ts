@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { Service } from "@antaresque/dissonance";
-import { TourneyResult, TourneyScore } from "src/types";
+import { ChartData, TourneyResult, TourneyScore } from "src/types";
 
 const MIZOOK_COLOR = "#DDAACC";
 @Service()
@@ -72,6 +72,67 @@ export class EmbedService {
             { name: 'Accuracy', value: `${(accuracy * 100).toFixed(2)}%`, inline: true },
             { name: 'Score', value: `${scoreDataNum.join('/')}`, inline: true },
         );
+    }
+
+    generateCoopEmbed(data: {
+        result: number;
+        diff: string;
+        accuracy: number;
+        scoreValues: number[];
+        songData: ChartData;
+        player: string | null;
+        difficulty: string | null,
+        accuracyConfidence: number}[]) 
+    {
+        const fields = [];
+        for(let i = 0; i < data.length; i++) {
+            const {result,diff,accuracy,scoreValues,songData,player,difficulty, accuracyConfidence} = data[i];
+
+            let stringName = `**${player ?? `Player ${i+1}`}** [${difficulty}]`;
+            if(accuracyConfidence < 90)
+                stringName += " low conf, check"
+            const stringValue = `${scoreValues.join('/')} (${(accuracy * 100).toFixed(2)}%) **${result.toFixed(2)}**`
+            fields.push({ name: stringName, value: stringValue })
+        }
+
+        return new EmbedBuilder()
+        .setColor('#DDAACC')
+        .setTitle(`${data[0].songData.name} - coop match`)
+        .addFields(fields);
+    }
+
+    generateCoopRaw(data: {
+        result: number;
+        diff: string;
+        accuracy: number;
+        scoreValues: number[];
+        songData: ChartData;
+        player: string | null;
+        difficulty: string | null,
+        accuracyConfidence: number}[]) 
+    {
+        let valueString = "";
+        for(let i = 0; i < data.length; i++) {
+            const {result,diff,accuracy,scoreValues,songData,player,difficulty, accuracyConfidence} = data[i];
+
+            valueString += player ?? "";
+            valueString += "\t";
+            valueString += songData.name;
+            valueString += "\t";
+            valueString += difficulty;
+            valueString += "\t";
+            valueString += scoreValues[1];
+            valueString += "\t";
+            valueString += scoreValues[2];
+            valueString += "\t";
+            valueString += scoreValues[3];
+            valueString += "\t";
+            valueString += scoreValues[4];
+            valueString += "\t";
+            valueString += "\n";
+        }
+
+        return valueString;
     }
 
     calcRank(constant: number): string {

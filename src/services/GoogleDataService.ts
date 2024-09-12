@@ -1,9 +1,11 @@
-import { ConstantRecord } from './../types';
+import { ConstantRecord, TourneyScore } from './../types';
 import { DissonanceLogger, Service } from "@antaresque/dissonance";
 import { google } from "googleapis";
 import { ChartData } from "../types";
 
 const DEFAULT_SERVER = '980783169735364658';
+const DUMP_SHEET = "1WzJ1K60VJQ2ofRWQra6iD3UXougpyTpd8ZnDXq6uRXE";
+
 @Service()
 export class GoogleDataService {
     private _constants: Record<string, ConstantRecord> = {};
@@ -73,6 +75,34 @@ export class GoogleDataService {
             this.logger.info('Error loading client secret file:');
             return [];
         }
+    }
+
+    public async addScoreData(dataCoop: { result: number; diff: string; accuracy: number; scoreValues: number[]; songData: ChartData; player: string | null; difficulty: string | null; accuracyConfidence: number; }[]) {        
+        const secret = process.env.GOOGLE_SECRET ?? "";
+        const auth = google.auth.fromAPIKey(secret);
+        const sheets = google.sheets({version: 'v4', auth});
+
+        const name = dataCoop[0].songData.name;
+        const valueArray = [];
+
+        for(const item of dataCoop) {
+            const player = item.player ?? "";
+            const difficulty = item.difficulty ?? "";
+            const scoreValues = item.scoreValues;
+            valueArray.push([
+                player, name, difficulty, scoreValues[1], scoreValues[2], scoreValues[3], scoreValues[4]
+            ])
+        }
+
+        const response = await sheets.spreadsheets.values.append({
+            spreadsheetId: DUMP_SHEET,
+            range: "dump",
+            valueInputOption: "USER_ENTERED",
+            requestBody: {
+                range: "dump",
+                values: valueArray
+            }    
+        });
     }
 
     private getSpreadsheetByServer(server: string) {
