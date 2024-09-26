@@ -40,7 +40,7 @@ export class ScreenshotCommand implements OnCommandInteraction {
     }
 
     private async handleForLink(msg: Message<boolean>, interaction: CommandInteraction) {
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply({ ephemeral: true });
         
         const embed = await this.ocrService.urlIntoEmbed(msg.content);
         if(embed === undefined) {
@@ -53,7 +53,7 @@ export class ScreenshotCommand implements OnCommandInteraction {
 
         
     private async handleForAttachments(msg: Message<boolean>, interaction: CommandInteraction) {
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply({ ephemeral: true });
 
         const embeds: EmbedBuilder[] = [];
         for(const v of msg.attachments) {
