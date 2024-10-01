@@ -34,7 +34,7 @@ export class SongDataService {
     }
 
     public getSongDifficulties() {
-        return ["Hard", "Expert", "Master"];
+        return ["Hard", "Expert", "Master", "Append"];
     }
 
     // deprecated
