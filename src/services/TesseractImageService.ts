@@ -15,6 +15,8 @@ const withinRange = (value: number, target: number, range: number) => {
 export class TesseractImageService {
 
     public async cutBuffer(file: Buffer) {
+        sharp.concurrency(1);
+
         const version = await this.checkVersion(file);
         if(version === "jp" || version === "en")
           return this.cutBufferSolo(version, file);
@@ -26,6 +28,7 @@ export class TesseractImageService {
 
     public async cutBufferSolo(version: "en" | "jp", file: Buffer) {
       let image = sharp(file).removeAlpha();
+      
       const { width, height } = await image.metadata();
       const options = await this.getOptions(version, width, height);
       
