@@ -7,6 +7,7 @@ import { EmbedService } from "./EmbedService";
 import { SongDataService } from "./SongDataService";
 import axios from 'axios';
 import { RecognizeResult } from "tesseract.js";
+import { GoogleDataService } from "./GoogleDataService";
 
 @Service()
 export class TesseractOCRService {
@@ -16,9 +17,10 @@ export class TesseractOCRService {
         private readonly songDataService: SongDataService,
         private readonly embedService: EmbedService,
         private readonly calculationService: CalculationService,
+        private readonly googleService: GoogleDataService,
         private readonly logger: DissonanceLogger) {}
 
-    public async urlIntoData(url: string) {
+    public async urlIntoData(url: string, possibleSongNames: string | null, assignment = false) {
         try {
             this.logger.debug("OCR attempt");
             const response = await axios.get(url, { responseType: 'arraybuffer' })
@@ -27,12 +29,12 @@ export class TesseractOCRService {
             if(version === "en" || version === "jp") {
                 const tesseractData = await this.tesseract.detectFromBuffer(buffers, version);
                 const preparedData = this.prepareResults(tesseractData);
-                return await this.inferData(preparedData);
+                return await this.inferData(preparedData, possibleSongNames, assignment);
             }
             if(version === "jpcoop") {
                 const tesseractData = await this.tesseract.detectFromCoopBuffers(buffers, version);
                 const preparedData = this.prepareResultsCoop(tesseractData);
-                return await this.inferDataCoop(preparedData);
+                return await this.inferDataCoop(preparedData, possibleSongNames);
             }
         }
         catch(e) {
@@ -41,8 +43,8 @@ export class TesseractOCRService {
         }
     }
 
-    public async urlIntoEmbed(url: string) : Promise<EmbedBuilder | undefined> {
-        const data = await this.urlIntoData(url);
+    public async urlIntoEmbed(url: string, possibleSongNames: string | null, playerName="", assignment = false) : Promise<EmbedBuilder | undefined> {
+        const data = await this.urlIntoData(url, possibleSongNames, assignment);
         if(data === undefined) 
             return;
 
@@ -52,6 +54,8 @@ export class TesseractOCRService {
                 return;
 
             const { result: scoreResult, constant, diff, accuracy, scoreNumbers, songData } = dataSolo;
+            if(assignment)
+                await this.googleService.addScoreDataAssignment(dataSolo, playerName);
             return this.embedService.generateScoreEmbed(scoreResult, constant, diff, accuracy, scoreNumbers, songData.name, songData.difficulty, false);
         }
         if(version === "coop") {
@@ -131,12 +135,13 @@ export class TesseractOCRService {
         return scoreArray;
     }
 
-    private async inferData(data: {title: string, scoreNumbers: number[]}) {
+    private async inferData(data: {title: string, scoreNumbers: number[]}, possibleSongNames: string | null, assignment=false) {
         const { title, scoreNumbers } = data;
         const notecount = scoreNumbers.reduce((acc, i) => acc+i);
         const accuracy = this.calculationService.calculateAccuracy(scoreNumbers)
 
-        let songData = await this.songDataService.findOCRWithoutDiff(title.trim(), notecount);
+        const songNames = (assignment) ? await this.googleService.getCurrentAssignment() : possibleSongNames;
+        let songData = await this.songDataService.findOCRWithoutDiff(title.trim(), notecount, songNames);
         if(songData === undefined) 
             return;
             
@@ -158,7 +163,7 @@ export class TesseractOCRService {
         difficulty: string | null;
         accuracyArray: number[],
         accuracyConfidence: number
-    }[]) {
+    }[], possibleSongNames: string | null) {
 
         // get song name from notecount+diff
         let pairMap = new Map<string, [number, number]>();
@@ -184,7 +189,7 @@ export class TesseractOCRService {
         }
 
         const preparedMap = Array.from(pairMap).map(([key, val]) => ({ difficulty: key, noteCount: val[0] }))
-        const songData = await this.songDataService.findOCRWithDiff(preparedMap);
+        const songData = await this.songDataService.findOCRWithDiff(preparedMap, possibleSongNames);
         if(songData === undefined)
             return;
 

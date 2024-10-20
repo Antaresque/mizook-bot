@@ -53,9 +53,16 @@ export class SongDataService {
         return byNoteCount.find(data => data.name.replace(/[^a-z0-9]/gi, '') === noWSname || data.aliases.map(t => t.replace(/[^a-z0-9]/gi, '')).includes(noWSname));
     }
 
-    public async findOCRWithoutDiff(name: string | null, noteCount: number | null) {
+    public async findOCRForAssignment(name: string | null, noteCount: number | null) {
+        const assignmentQuery = await this.google.getCurrentAssignment();
+        return await this.findOCRWithoutDiff(name, noteCount, assignmentQuery);
+    }
+
+    public async findOCRWithoutDiff(name: string | null, noteCount: number | null, possibleSongNames: string | null) {
         if(name === null || noteCount === null)
             return undefined;
+
+        const songNameLimit = possibleSongNames?.split(";");
 
         const constants = await this.google.getConstants(null);
         // find by noteCount and diff
@@ -67,13 +74,29 @@ export class SongDataService {
         if(byNoteCount.length === 0)
             return undefined;
 
-        const preparedTitle = name.replace(/\s+/g, '');
-        const diffMap: Array<[ChartData, number]> = byNoteCount.map(_ => [_, levenshtein()(preparedTitle, _.name.replace(/\s+/g, ''))]);
-        const bestMatch = diffMap.reduce((best, current) => best[1] > current[1] ? best : current);
-        return bestMatch[0];
+        if(songNameLimit !== undefined && songNameLimit.length > 0) {
+            // filter based on limit
+            const filteredBySong = byNoteCount.filter(data => songNameLimit.some(_ => data.name.includes(_) || data.aliases.some(x => x.includes(_))));
+            if(filteredBySong.length === 1)
+                return filteredBySong[0];
+            if(filteredBySong.length === 0)
+                return undefined;
+
+            const preparedTitle = name.replace(/\s+/g, '');
+            const diffMap: Array<[ChartData, number]> = filteredBySong.map(_ => [_, levenshtein()(preparedTitle, _.name.replace(/\s+/g, ''))]);
+            const bestMatch = diffMap.reduce((best, current) => best[1] > current[1] ? best : current);
+            return bestMatch[0];
+        }
+        else {
+            const preparedTitle = name.replace(/\s+/g, '');
+            const diffMap: Array<[ChartData, number]> = byNoteCount.map(_ => [_, levenshtein()(preparedTitle, _.name.replace(/\s+/g, ''))]);
+            const bestMatch = diffMap.reduce((best, current) => best[1] > current[1] ? best : current);
+            return bestMatch[0];
+        }
+
     }
 
-    public async findOCRWithDiff(array: {difficulty: string, noteCount: number}[]) {
+    public async findOCRWithDiff(array: {difficulty: string, noteCount: number}[], possibleSongNames: string | null) {
         if(array.length === 0)
             return;
 

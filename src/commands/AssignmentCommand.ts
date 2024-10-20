@@ -3,17 +3,14 @@ import { CommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { OCRService } from "../services/OCRService";
 import { TesseractOCRService } from "../services/TesseractOCRService";
 
-@SlashCommand('ss')
-export class ScreenshotCommand implements OnCommandInteraction {
+@SlashCommand('assignment')
+export class AssignmentCommand implements OnCommandInteraction {
     constructor(private ocrService: TesseractOCRService, private logger: DissonanceLogger) { }
 
     async register() {
         return {
-            name: 'ss',
-            description: 'Analyze last image in channel',
-            options: [
-                { name: 'titles', description: 'Available titles, separated by semicolon', type: DissonanceCommandOptionType.STRING, required: false },
-            ]
+            name: 'assignment',
+            description: 'Analyze and submit last image(s) post in the channel'
         }
     }
 
@@ -43,32 +40,31 @@ export class ScreenshotCommand implements OnCommandInteraction {
     }
 
     private async handleForLink(msg: Message<boolean>, interaction: CommandInteraction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ ephemeral: false });
         await interaction.editReply({ content: "Analyzing and submitting the images..." });
 
-        const titles = interaction.options.get('titles', false)?.value as string;
+        const playerName = interaction.user.username;
         
-        const embed = await this.ocrService.urlIntoEmbed(msg.content, titles);
+        const embed = await this.ocrService.urlIntoEmbed(msg.content, null, playerName, true);
         if(embed === undefined) {
             await interaction.editReply({ content: "Unable to find or read image." });
             return;
         }
 
-        await interaction.editReply({ embeds: [embed] });
+        await interaction.editReply({ content: "Data analyzed", embeds: [embed] });
     }
 
         
     private async handleForAttachments(msg: Message<boolean>, interaction: CommandInteraction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ ephemeral: false });
         await interaction.editReply({ content: "Analyzing and submitting the images..." });
 
-        const titles = interaction.options.get('titles', false)?.value as string;
-        const playerName = interaction.user.discriminator;
+        const playerName = interaction.user.username;
 
         const embeds: EmbedBuilder[] = [];
         for(const v of msg.attachments) {
             const attachment = v[1];
-            const embed = await this.ocrService.urlIntoEmbed(attachment.url, titles);
+            const embed = await this.ocrService.urlIntoEmbed(attachment.url, null, playerName, true);
             if(embed !== undefined)
                 embeds.push(embed);
         }   
@@ -77,6 +73,6 @@ export class ScreenshotCommand implements OnCommandInteraction {
             await interaction.editReply({ content: "Unable to find or read image." });
             return;
         }
-        await interaction.editReply({ embeds: [...embeds] });
+        await interaction.editReply({ content: "Data analyzed", embeds: [...embeds] });
     }
 }

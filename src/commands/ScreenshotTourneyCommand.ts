@@ -42,7 +42,7 @@ export class ScreenshotTourneyCommand implements OnCommandInteraction {
     private async handleForLink(msg: Message<boolean>, interaction: CommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
 
-        const data = await this.ocrService.urlIntoData(msg.content);
+        const data = await this.ocrService.urlIntoData(msg.content, null);
         if(data?.dataCoop === undefined) {
             await interaction.editReply({ content: "Unable to find image"});
             return;
@@ -64,7 +64,7 @@ export class ScreenshotTourneyCommand implements OnCommandInteraction {
         let embeds: string = "```";
         for(const v of msg.attachments) {
             const attachment = v[1];
-            const data = await this.ocrService.urlIntoData(attachment.url);
+            const data = await this.ocrService.urlIntoData(attachment.url, null);
             if(data?.dataCoop === undefined)
                 continue;
             const content = this.embedService.generateCoopRaw(data.dataCoop);

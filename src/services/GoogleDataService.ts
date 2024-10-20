@@ -1,6 +1,6 @@
 import { ConstantRecord, TourneyScore } from './../types';
 import { DissonanceLogger, Service } from "@antaresque/dissonance";
-import { google } from "googleapis";
+import { Auth, google } from "googleapis";
 import { ChartData } from "../types";
 
 const DEFAULT_SERVER = '980783169735364658';
@@ -9,6 +9,7 @@ const DUMP_SHEET = "1WzJ1K60VJQ2ofRWQra6iD3UXougpyTpd8ZnDXq6uRXE";
 @Service()
 export class GoogleDataService {
     private _constants: Record<string, ConstantRecord> = {};
+    private _assignmentQuery: {assignmentNo: string, query: string, lastModified: number} = { assignmentNo: "", query: "", lastModified: 0};
 
     constructor(private logger: DissonanceLogger) {}
 
@@ -77,6 +78,86 @@ export class GoogleDataService {
         }
     }
 
+    // ------
+
+    public async getCurrentAssignment() {
+        await this.updateCurrentAssignment();
+        return this._assignmentQuery.query;
+    }
+    
+    private async updateCurrentAssignment() {
+        const query = this._assignmentQuery;
+
+        // updates constants every 30 minutes
+        const UPDATE_DELAY = process.env.UPDATE_DELAY ? parseInt(process.env.UPDATE_DELAY) : 1000 * 60 * 30;
+        const current = Date.now();
+      
+        if(query.lastModified + UPDATE_DELAY > current)
+          return;
+
+        const values = await this.readCurrentAssignment();
+      
+        this._assignmentQuery = {
+            lastModified: Date.now(),
+            query: values[1],
+            assignmentNo: values[0]
+        }
+
+        console.log(this._assignmentQuery);
+    }
+
+    private async readCurrentAssignment() {
+        try {
+            const secret = process.env.GOOGLE_SECRET ?? "";
+            const auth = google.auth.fromAPIKey(secret);
+            const sheets = google.sheets({version: 'v4', auth});
+    
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: DUMP_SHEET,
+                range: 'Songs!A1:B1' 
+            });
+    
+            const { values } = response.data;
+    
+            if(values === undefined || values === null)
+                return [];
+    
+            return values[0];
+        }
+        catch(err) {
+            this.logger.info('Error loading client secret file:');
+            return [];
+        }
+    }
+
+
+    public async addScoreDataAssignment(dataSolo: { result: number; constant: number; diff: string; accuracy: number; scoreNumbers: number[]; songData: ChartData; }, discriminator: string) {
+        const secret = process.env.GOOGLE_SECRET ?? "";
+        const auth = new Auth.GoogleAuth({
+            keyFile: "./credentials.json",
+            scopes: "https://www.googleapis.com/auth/spreadsheets",
+        });
+        const sheets = google.sheets({version: 'v4', auth});
+
+        const { result, constant, diff, accuracy, scoreNumbers, songData } = dataSolo;
+        await this.updateCurrentAssignment(); 
+
+        const valueArray: string[][] = [[
+            this._assignmentQuery.assignmentNo, discriminator, songData.name, songData.difficulty, scoreNumbers[1].toString(), scoreNumbers[2].toString(), scoreNumbers[3].toString(), scoreNumbers[4].toString()
+        ]];
+        
+
+        const response = await sheets.spreadsheets.values.append({
+            spreadsheetId: DUMP_SHEET,
+            range: "Scores!A:A",
+            valueInputOption: "USER_ENTERED",
+            requestBody: {
+                range: "Scores!A:A",
+                values: valueArray
+            }    
+        });
+    }
+
     public async addScoreData(dataCoop: { result: number; diff: string; accuracy: number; scoreValues: number[]; songData: ChartData; player: string | null; difficulty: string | null; accuracyConfidence: number; }[]) {        
         const secret = process.env.GOOGLE_SECRET ?? "";
         const auth = google.auth.fromAPIKey(secret);
@@ -90,7 +171,7 @@ export class GoogleDataService {
             const difficulty = item.difficulty ?? "";
             const scoreValues = item.scoreValues;
             valueArray.push([
-                player, name, difficulty, scoreValues[1], scoreValues[2], scoreValues[3], scoreValues[4]
+                Date.now(), player, name, difficulty, scoreValues[1], scoreValues[2], scoreValues[3], scoreValues[4]
             ])
         }
 
