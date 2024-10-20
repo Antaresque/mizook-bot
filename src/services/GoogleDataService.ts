@@ -132,9 +132,9 @@ export class GoogleDataService {
 
 
     public async addScoreDataAssignment(dataSolo: { result: number; constant: number; diff: string; accuracy: number; scoreNumbers: number[]; songData: ChartData; }, discriminator: string) {
-        const secret = process.env.GOOGLE_SECRET ?? "";
+        const credentials = process.env.GOOGLE_CREDENTIALS ?? "";
         const auth = new Auth.GoogleAuth({
-            keyFile: "./credentials.json",
+            credentials: JSON.parse(credentials),
             scopes: "https://www.googleapis.com/auth/spreadsheets",
         });
         const sheets = google.sheets({version: 'v4', auth});
