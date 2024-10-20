@@ -11,10 +11,10 @@ export class AssignmentAdminCommand implements OnCommandInteraction {
         return {
             name: 'assignment-batch',
             description: 'Analyzes all images in last 10 posts in the channel (for mods only)',
-            options: [{
-                name: 'player', description: 'Username of the player (can be empty)', type: DissonanceCommandOptionType.STRING, required: false},{
-                name: 'messageCount', description: 'default: 10, please dont abuse this', type: DissonanceCommandOptionType.STRING, required: false
-            }]
+            options: [
+                { name: 'player', description: 'Username of the player (can be empty)', type: DissonanceCommandOptionType.STRING, required: false },
+                { name: 'message-count', description: 'default 10, please dont abuse this', type: DissonanceCommandOptionType.NUMBER, required: false }
+            ]
         }
     }
 
@@ -27,7 +27,7 @@ export class AssignmentAdminCommand implements OnCommandInteraction {
     };
 
     async handle({ interaction }: DissonanceCommandContext) {
-        const msgCount = interaction.options.get('messageCount') ? interaction.options.get('messageCount')?.value as number : 10;
+        const msgCount = interaction.options.get('message-count') ? interaction.options.get('message-count')?.value as number : 10;
         const msgs = await interaction.channel?.messages.fetch({ limit: Math.min(50, msgCount) });
 
         if(msgs === undefined || msgs.size === 0)
