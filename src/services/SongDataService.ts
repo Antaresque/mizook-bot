@@ -101,6 +101,7 @@ export class SongDataService {
             return;
 
         const constants = await this.google.getConstants(null);
+        const songNameLimit = possibleSongNames?.split(";");
         // find by noteCount and diff
         const results: ChartData[][] = [];
         for(let { difficulty, noteCount } of array) {
@@ -113,11 +114,18 @@ export class SongDataService {
             return;
 
         const intersectingValues = names.reduce((acc, array) => this.intersect(acc, array));
-        if(intersectingValues.length !== 1)
-            return;
+        if(intersectingValues.length === 1)
+            return constants.filter(data => data.name === intersectingValues[0]);
 
-        const songData = constants.filter(data => data.name === intersectingValues[0]);
-        return songData;
+        if(songNameLimit !== undefined && songNameLimit.length > 0) {
+            // filter based on limit
+            const filteredBySong = intersectingValues.filter(_ => songNameLimit.some(limit => limit === _))
+            if(filteredBySong.length === 1)
+                return constants.filter(data => data.name === filteredBySong[0]);
+            if(filteredBySong.length === 0)
+                return undefined;
+        }
+        else return constants.filter(data => data.name === intersectingValues[0]);
     }
 
     private intersect(a: string[], b: string[]) {
