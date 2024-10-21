@@ -143,7 +143,7 @@ export class GoogleDataService {
         await this.updateCurrentAssignment(); 
 
         const valueArray: string[][] = [[
-            this._assignmentQuery.assignmentNo, discriminator, songData.name, songData.difficulty, scoreNumbers[1].toString(), scoreNumbers[2].toString(), scoreNumbers[3].toString(), scoreNumbers[4].toString()
+            this._assignmentQuery.assignmentNo, discriminator, songData.name, songData.difficulty, scoreNumbers[1].toString(), scoreNumbers[2].toString(), scoreNumbers[3].toString(), scoreNumbers[4].toString(), constant.toString(), diff, result.toString(), accuracy.toString()
         ]];
         
 
