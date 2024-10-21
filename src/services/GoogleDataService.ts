@@ -142,8 +142,11 @@ export class GoogleDataService {
         const { result, constant, diff, accuracy, scoreNumbers, songData } = dataSolo;
         await this.updateCurrentAssignment(); 
 
+        const resultString =  `${result.toFixed(2)}`;
+        const accuracyString = `${(accuracy * 100).toFixed(2)}%`;
+
         const valueArray: string[][] = [[
-            this._assignmentQuery.assignmentNo, discriminator, songData.name, songData.difficulty, scoreNumbers[1].toString(), scoreNumbers[2].toString(), scoreNumbers[3].toString(), scoreNumbers[4].toString(), constant.toString(), diff, result.toString(), accuracy.toString()
+            this._assignmentQuery.assignmentNo, discriminator, songData.name, songData.difficulty, scoreNumbers[1].toString(), scoreNumbers[2].toString(), scoreNumbers[3].toString(), scoreNumbers[4].toString(), constant.toString(), `'${diff}`, resultString, accuracyString
         ]];
         
 
