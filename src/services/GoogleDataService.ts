@@ -3,7 +3,7 @@ import { DissonanceLogger, Service } from "@antaresque/dissonance";
 import { Auth, google } from "googleapis";
 import { ChartData } from "../types";
 
-const DEFAULT_SERVER = '980783169735364658';
+const DEFAULT_SERVER = '986099686005960796';
 const DUMP_SHEET = "1WzJ1K60VJQ2ofRWQra6iD3UXougpyTpd8ZnDXq6uRXE";
 
 @Service()
