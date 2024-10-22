@@ -194,7 +194,7 @@ export class TesseractOCRService {
 
         const preparedMap = Array.from(pairMap).map(([key, val]) => ({ difficulty: key, noteCount: val[0] }))
         const songData = await this.songDataService.findOCRWithDiff(preparedMap, possibleSongNames);
-        if(songData === undefined)
+        if(songData === undefined || songData.length === 0)
             return;
 
         // calculate scores for each result

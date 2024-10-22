@@ -105,6 +105,9 @@ export class SongDataService {
         // find by noteCount and diff
         const results: ChartData[][] = [];
         for(let { difficulty, noteCount } of array) {
+            // no data on those
+            if(difficulty.toUpperCase() === "EASY" || difficulty.toUpperCase() === "NORMAL" || difficulty.toUpperCase() === "HARD")
+                continue;
             const byNoteCount = constants.filter(data => noteCount === data.noteCount && difficulty.toUpperCase() === data.difficulty.toUpperCase());
             results.push(byNoteCount);
         }       
@@ -117,13 +120,16 @@ export class SongDataService {
         if(intersectingValues.length === 1)
             return constants.filter(data => data.name === intersectingValues[0]);
 
+        if(intersectingValues.length === 0)
+            return;
+
         if(songNameLimit !== undefined && songNameLimit.length > 0) {
             // filter based on limit
             const filteredBySong = intersectingValues.filter(_ => songNameLimit.some(limit => limit === _))
             if(filteredBySong.length === 1)
                 return constants.filter(data => data.name === filteredBySong[0]);
             if(filteredBySong.length === 0)
-                return undefined;
+                return;
         }
         else return constants.filter(data => data.name === intersectingValues[0]);
     }
