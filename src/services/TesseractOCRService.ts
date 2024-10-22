@@ -5,7 +5,7 @@ import { EmbedBuilder } from "discord.js";
 import { CalculationService } from "./CalculationService";
 import { EmbedService } from "./EmbedService";
 import { SongDataService } from "./SongDataService";
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { RecognizeResult } from "tesseract.js";
 import { GoogleDataService } from "./GoogleDataService";
 
@@ -23,9 +23,13 @@ export class TesseractOCRService {
     public async urlIntoData(url: string, possibleSongNames: string | null, assignment = false) {
         try {
             this.logger.debug("OCR attempt");
-            const response = await axios.get(url, { responseType: 'arraybuffer' })
-            const rawBuffer = Buffer.from(response.data);
+            let response: AxiosResponse | null = await axios.get(url, { responseType: 'arraybuffer' })
+            let rawBuffer: Buffer | null = Buffer.from(response!.data);
             const { buffers, version } = await this.imageService.cutBuffer(rawBuffer);
+
+            response = null;
+            rawBuffer = null;
+
             if(version === "en" || version === "jp") {
                 const tesseractData = await this.tesseract.detectFromBuffer(buffers, version);
                 const preparedData = this.prepareResults(tesseractData);
